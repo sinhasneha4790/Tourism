@@ -29,7 +29,16 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [x] Pushed to GitHub (`main`)
   - [x] Deployed to Vercel — https://tourism-tm78.vercel.app
   - [ ] Lighthouse ≥ 90 on production (needs the live URL)
-- [ ] Phase 2 — Enquiries & trust (Contact, About, legal pages, WhatsApp button, email delivery)
+- [ ] **Phase 2 — Enquiries & trust.** Code complete on branch `feat/phase-2`; verified locally with lint, typecheck, 24 unit tests, build (48 routes) and 63 Playwright checks.
+  - [x] `/contact`: contact form (server action + zod), WhatsApp / phone / email cards (shown once env vars are set), FAQ with FAQPage JSON-LD
+  - [x] `/about`: brand story, values, how booking works
+  - [x] `/terms`, `/privacy`, `/cancellation`: **draft** text with a visible "Draft" notice. The owner must have them reviewed and fill in the [bracketed] values in `content/legal.ts`
+  - [x] Floating WhatsApp button site-wide, plus "Ask on WhatsApp" on each package with the package name pre-filled (hidden until `NEXT_PUBLIC_WHATSAPP_NUMBER` is set)
+  - [x] Enquiry forms on packages, planner and contact page email `CONTACT_TO_EMAIL` via Resend; the traveller also gets a confirmation once `CONTACT_FROM_EMAIL` is a verified sender
+  - [x] Per-page Open Graph images for every package and state
+  - [x] Footer Company and Legal links; About and Contact in the mobile menu; sitemap updated
+  - [x] Analytics (Vercel Web Analytics + Speed Insights, loaded on Vercel only)
+  - [ ] **Exit criterion:** a test enquiry reaches CONTACT_TO_EMAIL from production. Needs `RESEND_API_KEY` + `CONTACT_TO_EMAIL` set in Vercel
 - [ ] Phase 3 — Marketplace listings
 - [ ] Phase 4 — Bookings & payments (Razorpay test mode)
 - [ ] Phase 5 — Polish

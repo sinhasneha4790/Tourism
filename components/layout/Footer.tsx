@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
 import { STATES } from '@/content/states';
 import { SITE } from '@/content/site';
+import { whatsappHref } from '@/lib/contact';
 import { NewsletterForm } from './NewsletterForm';
 
 async function CopyrightYear() {
@@ -18,8 +19,20 @@ const TRAVEL = [
   { href: '/search', label: 'Search' },
 ];
 
+const COMPANY = [
+  { href: '/about', label: 'About us' },
+  { href: '/contact', label: 'Contact & FAQ' },
+  { href: '/packages', label: 'Enquire about a trip' },
+];
+
+const LEGAL_LINKS = [
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/terms', label: 'Terms' },
+  { href: '/cancellation', label: 'Cancellation & refunds' },
+];
+
 export function Footer() {
-  const whatsapp = SITE.whatsapp ? `https://wa.me/${SITE.whatsapp.replace(/\D/g, '')}` : null;
+  const whatsapp = whatsappHref();
   return (
     <footer className="no-print bg-night text-night-text">
       <div className="container-site flex flex-col gap-10 pb-7 pt-14">
@@ -68,22 +81,28 @@ export function Footer() {
             ))}
           </nav>
 
-          <div className="flex flex-col gap-2.5 text-sm">
-            <h2 className="eyebrow mb-1 text-xs text-peach">Talk to us</h2>
-            <p className="leading-relaxed text-night-muted">
-              Every package page has an enquiry form — tell us your dates and we’ll reply within one working day.
-            </p>
-            <Link href="/packages" className="hover:text-white hover:underline">
-              Browse packages →
-            </Link>
-          </div>
+          <nav aria-label="Company" className="flex flex-col gap-2.5 text-sm">
+            <h2 className="eyebrow mb-1 text-xs text-peach">Company</h2>
+            {COMPANY.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:text-white hover:underline">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
         </div>
 
         <div className="flex flex-wrap justify-between gap-3 border-t border-night-line pt-5 text-[13px] text-night-muted">
           <div>
             © <CopyrightYear /> Mistrail. {SITE.city}.
           </div>
-          <div>Private travel company · not affiliated with any government body</div>
+          <span>Private travel company · not affiliated with any government body</span>
+          <nav aria-label="Legal" className="flex flex-wrap gap-5">
+            {LEGAL_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className="underline-offset-2 hover:text-white hover:underline">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </div>
     </footer>

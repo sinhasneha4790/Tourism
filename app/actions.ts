@@ -3,7 +3,7 @@
 import { headers } from 'next/headers';
 import { enquirySchema, newsletterSchema } from '@/lib/validators';
 import { rateLimit } from '@/lib/rate-limit';
-import { sendEmail } from '@/lib/email';
+import { canEmailTravellers, sendEmail } from '@/lib/email';
 
 export interface FormState {
   ok: boolean;
@@ -68,6 +68,23 @@ export async function submitEnquiry(_prev: FormState, formData: FormData): Promi
       ok: false,
       message: 'We couldn’t send your enquiry just now. Please try again shortly.',
     };
+  }
+  // Best-effort confirmation to the traveller; only once a verified sender domain is configured.
+  if (canEmailTravellers()) {
+    await sendEmail({
+      to: e.email,
+      subject: 'We’ve received your enquiry — Mistrail',
+      text: [
+        `Hi ${e.name.split(' ')[0]},`,
+        '',
+        'Thanks for getting in touch with Mistrail. We’ve received your enquiry and will reply within one working day.',
+        '',
+        'What you sent us:',
+        ...lines.slice(1),
+        '',
+        '— Mistrail, Into the Northeast',
+      ].join('\n'),
+    });
   }
   return {
     ok: true,

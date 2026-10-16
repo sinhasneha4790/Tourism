@@ -99,6 +99,20 @@ export function MobileMenu() {
                 {item.label}
               </Link>
             ))}
+            {[
+              { href: '/about', label: 'About us' },
+              { href: '/contact', label: 'Contact' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={pathname === item.href ? 'page' : undefined}
+                onClick={() => setOpen(false)}
+                className={`rounded-2xl px-4 py-3 text-lg font-bold ${pathname === item.href ? 'bg-teal-soft text-teal' : 'hover:bg-teal-soft'}`}
+              >
+                {item.label}
+              </Link>
+            ))}
             <div className="mt-4 flex flex-col gap-2">
               <Link href="/permits" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center rounded-full bg-amber font-bold text-white">
                 Permit check

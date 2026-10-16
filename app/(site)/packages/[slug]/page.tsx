@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Check, X, Calculator, ShieldCheck } from 'lucide-react';
+import { Check, X, Calculator, ShieldCheck, MessageCircle } from 'lucide-react';
+import { whatsappHref } from '@/lib/contact';
 import { PACKAGES, getPackage } from '@/content/packages';
 import { stateName } from '@/content/states';
 import { interestLabel } from '@/content/interests';
@@ -219,6 +220,16 @@ export default async function PackagePage({ params }: PageProps<'/packages/[slug
           >
             <Calculator size={18} aria-hidden="true" /> Estimate cost
           </Link>
+          {whatsappHref(`Hi Mistrail, I’m interested in “${pkg.title}”.`) && (
+            <a
+              href={whatsappHref(`Hi Mistrail, I’m interested in “${pkg.title}”.`)!}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-13 items-center justify-center gap-2 rounded-full border border-night-line-2 font-bold hover:bg-night-2"
+            >
+              <MessageCircle size={18} aria-hidden="true" /> Ask on WhatsApp
+            </a>
+          )}
           <p className="text-xs text-night-muted">Prices are placeholders while Mistrail confirms this season’s rates.</p>
         </aside>
       </div>

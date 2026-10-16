@@ -4,7 +4,7 @@ import { PACKAGES } from '@/content/packages';
 import { SITE } from '@/content/site';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const pages = ['', '/states', '/packages', '/festivals', '/permits', '/plan'];
+  const pages = ['', '/states', '/packages', '/festivals', '/permits', '/plan', '/about', '/contact', '/terms', '/privacy', '/cancellation'];
   return [
     ...pages.map((p) => ({
       url: `${SITE.url}${p}`,

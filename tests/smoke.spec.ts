@@ -1,6 +1,21 @@
 import { expect, test } from '@playwright/test';
 
-const PAGES = ['/', '/states', '/states/meghalaya', '/packages', '/packages/tawang-circuit', '/festivals', '/permits', '/plan', '/search?q=tawang'];
+const PAGES = [
+  '/',
+  '/states',
+  '/states/meghalaya',
+  '/packages',
+  '/packages/tawang-circuit',
+  '/festivals',
+  '/permits',
+  '/plan',
+  '/search?q=tawang',
+  '/about',
+  '/contact',
+  '/terms',
+  '/privacy',
+  '/cancellation',
+];
 
 for (const path of PAGES) {
   test(`${path} renders without console errors or horizontal scroll`, async ({ page }) => {
@@ -47,4 +62,25 @@ test('budget planner per-person total updates', async ({ page }) => {
 test('search escapes hostile input', async ({ page }) => {
   await page.goto('/search?q=%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E');
   await expect(page.locator('img[src="x"]')).toHaveCount(0);
+});
+
+test('contact form validates on the server and shows field errors', async ({ page }) => {
+  await page.goto('/contact');
+  await page.getByRole('button', { name: 'Send enquiry' }).click();
+  await expect(page.getByText('Please fix the highlighted fields.')).toBeVisible();
+  await expect(page.getByText('Please tell us your name')).toBeVisible();
+});
+
+test('footer legal links resolve', async ({ page }) => {
+  const links = [
+    ['Privacy', '/privacy', 'Privacy policy'],
+    ['Terms', '/terms', 'Terms of use & booking'],
+    ['Cancellation & refunds', '/cancellation', 'Cancellation & refunds'],
+  ];
+  for (const [name, path, heading] of links) {
+    await page.goto('/');
+    await page.getByRole('navigation', { name: 'Legal' }).getByRole('link', { name }).click();
+    await expect(page).toHaveURL(new RegExp(`${path}$`));
+    await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+  }
 });

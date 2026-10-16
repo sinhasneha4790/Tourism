@@ -13,11 +13,16 @@ export function EnquiryForm({
   refLabel,
   defaultTravellers = 2,
   defaultMessage = '',
+  showTrip = true,
+  messageLabel = 'Anything we should know?',
 }: {
   kind: 'package' | 'contact' | 'plan';
   refLabel?: string;
   defaultTravellers?: number;
   defaultMessage?: string;
+  /** Show the start-date and travellers fields (hidden on the general contact form). */
+  showTrip?: boolean;
+  messageLabel?: string;
 }) {
   const [state, action, pending] = useActionState(submitEnquiry, initial);
   const err = state.errors ?? {};
@@ -76,25 +81,29 @@ export function EnquiryForm({
           aria-describedby={err.phone ? 'enq-phone-err' : undefined}
         />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Start date" name="startDate" error={err.startDate}>
-          <input id="enq-startDate" name="startDate" type="date" className={input} aria-invalid={!!err.startDate} />
-        </Field>
-        <Field label="Travellers" name="travellers" error={err.travellers}>
-          <input
-            id="enq-travellers"
-            name="travellers"
-            type="number"
-            min={1}
-            max={30}
-            defaultValue={defaultTravellers}
-            className={input}
-            aria-invalid={!!err.travellers}
-          />
-        </Field>
-      </div>
+      {showTrip ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Start date" name="startDate" error={err.startDate}>
+            <input id="enq-startDate" name="startDate" type="date" className={input} aria-invalid={!!err.startDate} />
+          </Field>
+          <Field label="Travellers" name="travellers" error={err.travellers}>
+            <input
+              id="enq-travellers"
+              name="travellers"
+              type="number"
+              min={1}
+              max={30}
+              defaultValue={defaultTravellers}
+              className={input}
+              aria-invalid={!!err.travellers}
+            />
+          </Field>
+        </div>
+      ) : (
+        <input type="hidden" name="travellers" value="1" />
+      )}
       <div className="sm:col-span-2">
-        <Field label="Anything we should know?" name="message" error={err.message}>
+        <Field label={messageLabel} name="message" error={err.message}>
           <textarea id="enq-message" name="message" rows={4} defaultValue={defaultMessage} className={`${input} h-auto py-3`} />
         </Field>
       </div>
