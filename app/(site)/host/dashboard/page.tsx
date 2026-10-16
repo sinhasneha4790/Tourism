@@ -7,6 +7,7 @@ import { requireHost } from '@/lib/dal';
 import { requireDb } from '@/lib/db';
 import { bookings, enquiries, listings } from '@/lib/db/schema';
 import { BookingList } from '@/components/booking/BookingList';
+import { HostReviews } from '@/components/marketplace/HostReviews';
 import { stateName } from '@/content/states';
 import { formatInr } from '@/lib/format';
 import { StatusChip } from '@/components/marketplace/StatusChip';
@@ -95,6 +96,8 @@ async function Dashboard() {
         </div>
         <BookingList rows={hostBookings} view="host" empty="Paid bookings for your listings will appear here." />
       </section>
+
+      <HostReviews listingTitles={titleOf} />
 
       <section aria-labelledby="enquiries" className="flex flex-col gap-4">
         <h2 id="enquiries" className="text-2xl font-extrabold">

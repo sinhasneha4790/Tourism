@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getApprovedListing, listingStaticParams } from '@/lib/listings';
+import { getApprovedListing, getPublishedReviews, listingStaticParams } from '@/lib/listings';
 import { ListingDetail } from '@/components/marketplace/ListingDetail';
 import { paymentsEnabled } from '@/lib/razorpay';
 
@@ -22,5 +22,6 @@ export async function generateMetadata({ params }: PageProps<'/stays/[slug]'>): 
 export default async function Page({ params }: PageProps<'/stays/[slug]'>) {
   const listing = await getApprovedListing('stay', (await params).slug);
   if (!listing) notFound();
-  return <ListingDetail listing={listing} bookingOpen={paymentsEnabled()} />;
+  const reviews = await getPublishedReviews(listing.id);
+  return <ListingDetail listing={listing} bookingOpen={paymentsEnabled()} reviews={reviews} />;
 }

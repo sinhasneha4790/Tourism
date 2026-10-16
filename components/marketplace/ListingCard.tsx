@@ -6,6 +6,7 @@ import { stateName } from '@/content/states';
 import { formatInr } from '@/lib/format';
 import { Picture } from '@/components/ui/Picture';
 import { Chip } from '@/components/ui/Section';
+import { RatingSummary } from '@/components/ui/Stars';
 
 export function listingImage(l: Pick<PublicListing, 'photos' | 'title' | 'type'>, index = 0): ImageRef {
   const photo = l.photos[index];
@@ -39,6 +40,7 @@ export function ListingCard({ listing: l, headingLevel = 'h3' }: { listing: Publ
         <p className="flex items-center gap-1.5 text-sm text-ink-3">
           <Users size={14} aria-hidden="true" /> Up to {l.maxGuests} guests · hosted by {l.hostName}
         </p>
+        <RatingSummary rating={l.rating} count={l.reviewCount} className="text-ink-2" />
         <p className="mt-auto pt-2 text-sm text-ink-3">
           <strong className="text-lg text-ink">{formatInr(l.basePriceInr)}</strong> / {l.priceUnit}
         </p>

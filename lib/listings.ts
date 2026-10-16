@@ -2,7 +2,7 @@ import 'server-only';
 import { and, desc, eq } from 'drizzle-orm';
 import { cacheLife, cacheTag } from 'next/cache';
 import { db } from '@/lib/db';
-import { hostProfiles, listings, type ListingPhoto } from '@/lib/db/schema';
+import { hostProfiles, listings, reviews, type ListingPhoto } from '@/lib/db/schema';
 
 export const LISTINGS_TAG = 'listings';
 
@@ -21,6 +21,7 @@ export interface PublicListing {
   maxGuests: number;
   cancellationPolicy: 'flexible' | 'moderate' | 'strict';
   rating: number | null;
+  reviewCount: number;
   hostName: string;
 }
 
@@ -39,6 +40,7 @@ const publicColumns = {
   maxGuests: listings.maxGuests,
   cancellationPolicy: listings.cancellationPolicy,
   rating: listings.rating,
+  reviewCount: listings.reviewCount,
   hostName: hostProfiles.displayName,
 };
 
@@ -96,4 +98,41 @@ export const NO_LISTING_SLUG = '__none';
 export async function listingStaticParams(type: 'stay' | 'experience') {
   const all = await getApprovedListings(type);
   return all.length ? all.map((l) => ({ slug: l.slug })) : [{ slug: NO_LISTING_SLUG }];
+}
+
+export interface PublicReview {
+  id: string;
+  authorName: string;
+  rating: number;
+  text: string;
+  hostReply: string | null;
+  createdAt: Date;
+}
+
+/** Published reviews for a listing, newest first (tag: listings). */
+export async function getPublishedReviews(listingId: string): Promise<PublicReview[]> {
+  'use cache';
+  cacheTag(LISTINGS_TAG, `reviews:${listingId}`);
+  if (!db) return [];
+  try {
+    const rows = await db
+      .select({
+        id: reviews.id,
+        authorName: reviews.authorName,
+        rating: reviews.rating,
+        text: reviews.text,
+        hostReply: reviews.hostReply,
+        createdAt: reviews.createdAt,
+      })
+      .from(reviews)
+      .where(and(eq(reviews.listingId, listingId), eq(reviews.published, true)))
+      .orderBy(desc(reviews.createdAt))
+      .limit(50);
+    cacheLife('hours');
+    return rows;
+  } catch (err) {
+    console.error('[reviews] query failed', err);
+    cacheLife('seconds');
+    return [];
+  }
 }

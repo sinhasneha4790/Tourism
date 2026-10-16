@@ -2,6 +2,8 @@
  * Zod-validates every content file. Runs in CI (npm run validate:content).
  * Also cross-checks references between files (package states, festival states, permits).
  */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { STATES } from '../content/states';
 import { PACKAGES } from '../content/packages';
@@ -67,6 +69,33 @@ for (const s of STATES) {
     }
   }
 }
+
+// Owner photos: local files must exist; remote photos need a credit line.
+function images(): { where: string; src?: string; credit?: string }[] {
+  return [
+    ...STATES.flatMap((s) => [
+      { where: `state ${s.slug} cover`, ...s.cover },
+      ...s.attractions.map((a) => ({ where: `state ${s.slug} / ${a.name}`, ...a.image })),
+    ]),
+    ...PACKAGES.map((p) => ({ where: `package ${p.slug}`, ...p.image })),
+    ...FESTIVALS.map((f) => ({ where: `festival ${f.slug}`, ...f.image })),
+  ];
+}
+let photos = 0;
+for (const img of images()) {
+  if (!img.src) continue;
+  photos++;
+  if (img.src.startsWith('/')) {
+    if (!existsSync(join(process.cwd(), 'public', img.src))) {
+      errors++;
+      console.error(`✗ ${img.where}: photo ${img.src} not found in /public`);
+    }
+  } else if (!img.credit) {
+    errors++;
+    console.error(`✗ ${img.where}: remote photo needs a credit line`);
+  }
+}
+console.log(`✓ photos: ${photos} set (others use illustrations)`);
 
 const unverified = PERMITS.filter((p) => !p.verified).length;
 if (unverified) console.warn(`! ${unverified} permit records are unverified (shown with an "Unverified" notice on the site).`);

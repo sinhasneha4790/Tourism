@@ -91,3 +91,22 @@ describe('sign-in redirects', () => {
     expect(safeNext(null)).toBe('/account');
   });
 });
+
+describe('reviews', async () => {
+  const { averageRating, canReview, publicName } = await import('@/lib/review-rules');
+
+  it('opens reviews after a confirmed stay ends, for 60 days', () => {
+    expect(canReview({ status: 'confirmed', endDate: '2026-11-05' }, '2026-11-04')).toBe(false);
+    expect(canReview({ status: 'confirmed', endDate: '2026-11-05' }, '2026-11-05')).toBe(true);
+    expect(canReview({ status: 'confirmed', endDate: '2026-11-05' }, '2027-01-04')).toBe(true);
+    expect(canReview({ status: 'confirmed', endDate: '2026-11-05' }, '2027-01-05')).toBe(false);
+    expect(canReview({ status: 'cancelled', endDate: '2026-11-05' }, '2026-11-10')).toBe(false);
+  });
+
+  it('averages ratings and shortens author names', () => {
+    expect(averageRating([5, 4, 4])).toBe(4.3);
+    expect(averageRating([])).toBeNull();
+    expect(publicName('Asha  Devi Traveller')).toBe('Asha T.');
+    expect(publicName('Asha')).toBe('Asha');
+  });
+});

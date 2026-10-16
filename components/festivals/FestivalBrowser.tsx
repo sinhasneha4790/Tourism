@@ -33,7 +33,7 @@ export function FestivalBrowser() {
           All
         </button>
         {MONTHS_SHORT.map((m, i) => (
-          <button key={m} type="button" aria-pressed={month === i + 1} aria-label={MONTHS[i]} onClick={() => pick(i + 1)} className={chip(month === i + 1)}>
+          <button key={m} type="button" aria-pressed={month === i + 1} title={MONTHS[i]} onClick={() => pick(i + 1)} className={chip(month === i + 1)}>
             {m}
           </button>
         ))}

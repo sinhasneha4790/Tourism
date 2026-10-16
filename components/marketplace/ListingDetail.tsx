@@ -7,13 +7,16 @@ import { SITE } from '@/content/site';
 import { formatInr } from '@/lib/format';
 import { Picture } from '@/components/ui/Picture';
 import { Chip } from '@/components/ui/Section';
+import { RatingSummary } from '@/components/ui/Stars';
+import type { PublicReview } from '@/lib/listings';
+import { ReviewList } from './ReviewList';
 import { JsonLd } from '@/components/JsonLd';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { BookingWidget } from '@/components/booking/BookingWidget';
 import { POLICY_SUMMARY } from '@/content/policies';
 import { listingHref, listingImage } from './ListingCard';
 
-export function ListingDetail({ listing: l, bookingOpen }: { listing: PublicListing; bookingOpen: boolean }) {
+export function ListingDetail({ listing: l, bookingOpen, reviews = [] }: { listing: PublicListing; bookingOpen: boolean; reviews?: PublicReview[] }) {
   const isStay = l.type === 'stay';
   const state = stateName(l.state as StateSlug);
   return (
@@ -28,6 +31,18 @@ export function ListingDetail({ listing: l, bookingOpen }: { listing: PublicList
           image: l.photos.map((p) => p.url),
           address: { '@type': 'PostalAddress', addressLocality: l.location, addressRegion: state, addressCountry: 'IN' },
           offers: { '@type': 'Offer', price: l.basePriceInr, priceCurrency: 'INR' },
+          ...(l.rating && l.reviewCount
+            ? {
+                aggregateRating: { '@type': 'AggregateRating', ratingValue: l.rating, reviewCount: l.reviewCount, bestRating: 5, worstRating: 1 },
+                review: reviews.slice(0, 5).map((r) => ({
+                  '@type': 'Review',
+                  author: { '@type': 'Person', name: r.authorName },
+                  reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+                  reviewBody: r.text,
+                  datePublished: r.createdAt.toISOString().slice(0, 10),
+                })),
+              }
+            : {}),
         }}
       />
       <div className="container-site flex flex-col gap-8 py-10 md:py-14">
@@ -50,6 +65,7 @@ export function ListingDetail({ listing: l, bookingOpen }: { listing: PublicList
             <span className="flex items-center gap-1.5">
               <Users size={16} aria-hidden="true" /> Up to {l.maxGuests} guests
             </span>
+            <RatingSummary rating={l.rating} count={l.reviewCount} className="text-ink" />
           </p>
         </header>
 
@@ -77,6 +93,7 @@ export function ListingDetail({ listing: l, bookingOpen }: { listing: PublicList
               <p className="whitespace-pre-line leading-relaxed text-ink-2">{l.description}</p>
               <p className="text-sm text-ink-3">Hosted by {l.hostName}</p>
             </section>
+            <ReviewList reviews={reviews} hostName={l.hostName} />
             {l.amenities.length > 0 && (
               <section aria-labelledby="amenities" className="flex flex-col gap-3">
                 <h2 id="amenities" className="text-2xl font-extrabold">

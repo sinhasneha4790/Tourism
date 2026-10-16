@@ -65,7 +65,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="relative isolate overflow-hidden bg-night">
         <div className="absolute inset-0 -z-10">
-          <Scene image={{ scene: 'hills', alt: '', tint: ['#F3C9B4', '#2E4A50'] }} label={false} />
+          <Scene image={{ scene: 'hills', alt: '', tint: ['#F3C9B4', '#2E4A50'] }} label={false} priority />
           <div className="absolute inset-0 bg-gradient-to-b from-[rgb(23_34_28/0.55)] via-[rgb(46_74_80/0.65)] to-[rgb(23_34_28/0.9)]" />
         </div>
         <div className="container-site flex min-h-[640px] flex-col justify-center gap-7 py-20 text-white md:min-h-[700px]">

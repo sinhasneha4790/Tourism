@@ -95,3 +95,17 @@ describe('search', () => {
     expect(search('<img src=x onerror=alert(1)>')).toEqual([]);
   });
 });
+
+describe('scene images', async () => {
+  const { SCENE_KINDS, sceneSvg, sceneUrl, isHex } = await import('@/lib/scene-svg');
+  it('builds a valid SVG for every scene and a matching URL', () => {
+    for (const k of SCENE_KINDS) {
+      const svg = sceneSvg(k, 'E6EEF0', '2E4A50');
+      expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true);
+      expect(svg.endsWith('</svg>')).toBe(true);
+    }
+    expect(sceneUrl('tea', '#e6eef0', '#2e4a50')).toBe('/scene/tea/E6EEF0/2E4A50.svg');
+    expect(isHex('E6EEF0')).toBe(true);
+    expect(isHex('"><script>')).toBe(false);
+  });
+});

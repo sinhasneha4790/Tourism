@@ -163,3 +163,32 @@ test('a traveller cancels and the admin issues the refund', async ({ page }, inf
   await page.getByRole('button', { name: 'Refund ₹7,200' }).first().click();
   await expect(page.getByRole('button', { name: 'Refund ₹7,200' })).toHaveCount(0);
 });
+
+test('after the stay, the traveller reviews it and the rating appears on the listing', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-1280' || process.env.PAYMENTS_FAKE !== '1', 'runs once, needs the fake gateway');
+  const postgres = (await import('postgres')).default;
+  await openListing(page);
+  const book = await chooseDates(page, day(70), day(72));
+  await book.getByLabel('Your name').fill('Rina Bora');
+  await book.getByLabel('Email').fill(`rina-${run}@example.com`);
+  await book.getByRole('button', { name: 'Continue to payment' }).click();
+  await book.getByRole('button', { name: /^Pay/ }).click();
+  await page.waitForURL(/\/bookings\/MT-/);
+  const bookingUrl = page.url();
+
+  // Move the stay into the past so it can be reviewed.
+  const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+  await sql`update booking set start_date = current_date - 5, end_date = current_date - 3 where guest_email = ${`rina-${run}@example.com`}`;
+  await sql.end();
+
+  await page.goto(bookingUrl);
+  await page.getByRole('radio', { name: /5 stars/ }).check({ force: true });
+  await page.getByLabel('What was it like?').fill('Warm hosts, wonderful food and a view of the rice fields from bed.');
+  await page.getByRole('button', { name: 'Post review' }).click();
+  await expect(page.getByRole('heading', { name: 'Your review' })).toBeVisible();
+
+  await openListing(page);
+  await expect(page.getByRole('heading', { name: 'Guest reviews' })).toBeVisible();
+  await expect(page.getByText('Rina B.')).toBeVisible();
+  await expect(page.getByText(/5\.0 · 1 review/).first()).toBeVisible();
+});

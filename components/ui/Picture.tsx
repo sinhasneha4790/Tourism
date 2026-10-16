@@ -16,5 +16,7 @@ export function Picture({ image, sizes, priority = false, className = '' }: { im
       />
     );
   }
-  return <Scene image={image} className={`absolute inset-0 transition-transform duration-500 motion-reduce:transition-none ${className}`} />;
+  return (
+    <Scene image={image} priority={priority} className={`absolute inset-0 transition-transform duration-500 motion-reduce:transition-none ${className}`} />
+  );
 }

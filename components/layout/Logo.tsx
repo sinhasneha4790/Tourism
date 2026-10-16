@@ -14,11 +14,12 @@ export function LogoMark({ size = 38 }: { size?: number }) {
 
 export function Logo() {
   return (
-    <Link href="/" aria-label="Mistrail — Into the Northeast, home" className="flex shrink-0 items-center gap-2.5 text-teal no-underline">
+    <Link href="/" className="flex shrink-0 items-center gap-2.5 text-teal no-underline">
       <LogoMark />
       <span className="flex flex-col leading-none">
-        <span className="text-2xl font-extrabold tracking-[-0.02em]">mistrail</span>
-        <span className="mt-1 text-[9px] font-extrabold tracking-[0.26em] text-terracotta">INTO THE NORTHEAST</span>
+        <span className="text-2xl font-extrabold tracking-[-0.02em]">mistrail</span>{' '}
+        <span className="mt-1 text-[9px] font-extrabold uppercase tracking-[0.26em] text-terracotta">Into the Northeast</span>
+        <span className="sr-only">, home</span>
       </span>
     </Link>
   );

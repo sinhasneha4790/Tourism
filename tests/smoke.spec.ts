@@ -40,7 +40,7 @@ test('package filters update the URL', async ({ page }) => {
 
 test('festival month filter works', async ({ page }) => {
   await page.goto('/festivals');
-  await page.getByRole('button', { name: 'December' }).click();
+  await page.getByRole('button', { name: 'Dec', exact: true }).click();
   await expect(page).toHaveURL(/month=12/);
   await expect(page.getByRole('heading', { name: 'Hornbill Festival' })).toBeVisible();
 });

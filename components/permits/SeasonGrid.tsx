@@ -10,7 +10,12 @@ const LEVEL = {
 /** Month × state heat map. Rendered as a real table so screen readers get every cell. */
 export function SeasonGrid() {
   return (
-    <div className="relative overflow-x-auto rounded-[24px] border border-line-soft bg-card p-5">
+    <div
+      tabIndex={0}
+      role="region"
+      aria-label="Best months to visit (scrolls sideways)"
+      className="relative overflow-x-auto rounded-[24px] border border-line-soft bg-card p-5"
+    >
       <table className="w-full min-w-[840px] table-fixed border-separate border-spacing-1 text-[13px] font-extrabold">
         <caption className="sr-only">Best months to visit each state</caption>
         <thead>
@@ -20,9 +25,8 @@ export function SeasonGrid() {
             </th>
             {MONTHS.map((m) => (
               <th key={m} scope="col" className="pb-1.5 text-center text-ink-3">
-                <abbr title={m} className="no-underline">
-                  {m[0]}
-                </abbr>
+                <span aria-hidden="true">{m[0]}</span>
+                <span className="sr-only">{m}</span>
               </th>
             ))}
           </tr>

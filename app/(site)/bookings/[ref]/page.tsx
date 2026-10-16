@@ -5,7 +5,11 @@ import { Suspense } from 'react';
 import { eq } from 'drizzle-orm';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { requireDb } from '@/lib/db';
-import { bookings, listings } from '@/lib/db/schema';
+import { bookings, listings, reviews } from '@/lib/db/schema';
+import { canReview } from '@/lib/review-rules';
+import { todayIst } from '@/lib/pricing';
+import { Stars } from '@/components/ui/Stars';
+import { ReviewForm } from '@/components/booking/ReviewForm';
 import { getCurrentUser } from '@/lib/dal';
 import { holdIsActive, refundPreview, tokenMatches } from '@/lib/bookings';
 import { fakePayments, publicKeyId } from '@/lib/razorpay';
@@ -52,6 +56,8 @@ async function BookingView({
   const canCancel = (b.status === 'confirmed' || b.status === 'pending_payment') && refund.daysBefore >= 0;
   const isStay = row.type !== 'experience';
   const keyId = publicKeyId();
+  const [existingReview] = await db.select().from(reviews).where(eq(reviews.bookingId, b.id));
+  const reviewable = !existingReview && canReview(b, todayIst());
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
@@ -111,6 +117,22 @@ async function BookingView({
             </form>
           )}
         </section>
+
+        {(existingReview || reviewable) && (
+          <section id="review" aria-labelledby="review-title" className="flex flex-col gap-3 rounded-[20px] border border-line-soft bg-card p-5">
+            <h2 id="review-title" className="font-extrabold">
+              {existingReview ? 'Your review' : `How was ${isStay ? 'your stay' : 'it'}?`}
+            </h2>
+            {existingReview ? (
+              <>
+                <Stars value={existingReview.rating} />
+                <p className="whitespace-pre-line text-ink-2">{existingReview.text}</p>
+              </>
+            ) : (
+              <ReviewForm bookingRef={b.ref} token={token} />
+            )}
+          </section>
+        )}
 
         {row.slug && (
           <Link href={`/${isStay ? 'stays' : 'experiences'}/${row.slug}`} className="font-bold text-teal underline">

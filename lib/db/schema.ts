@@ -108,6 +108,7 @@ export const listings = pgTable(
     status: listingStatusEnum('status').notNull().default('draft'),
     rejectionReason: text('rejection_reason'),
     rating: doublePrecision('rating'),
+    reviewCount: integer('review_count').notNull().default(0),
     submittedAt: timestamp('submitted_at', { withTimezone: true }),
     approvedAt: timestamp('approved_at', { withTimezone: true }),
     createdAt: createdAt(),
@@ -201,6 +202,7 @@ export const bookings = pgTable(
     refundDueInr: integer('refund_due_inr'),
     cancelReason: text('cancel_reason'),
     payoutId: text('payout_id').references(() => payouts.id, { onDelete: 'set null' }),
+    reviewRequestedAt: timestamp('review_requested_at', { withTimezone: true }),
     createdAt: createdAt(),
     confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
@@ -216,6 +218,29 @@ export const bookings = pgTable(
   ],
 );
 
+/* --------------------------------- Reviews -------------------------------- */
+
+/** One review per completed booking. Published immediately; admins can hide a review. */
+export const reviews = pgTable(
+  'review',
+  {
+    id: id(),
+    bookingId: text('booking_id')
+      .notNull()
+      .references(() => bookings.id, { onDelete: 'cascade' }),
+    listingId: text('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    authorName: text('author_name').notNull(),
+    rating: integer('rating').notNull(),
+    text: text('text').notNull(),
+    published: boolean('published').notNull().default(true),
+    hostReply: text('host_reply'),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex('review_booking_idx').on(t.bookingId), index('review_listing_idx').on(t.listingId, t.published)],
+);
+
 /** Admin-editable settings (commission, fees, tax). */
 export const settings = pgTable('setting', {
   key: text('key').primaryKey(),
@@ -228,3 +253,4 @@ export type Listing = typeof listings.$inferSelect;
 export type HostProfile = typeof hostProfiles.$inferSelect;
 export type Enquiry = typeof enquiries.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
+export type Review = typeof reviews.$inferSelect;

@@ -62,7 +62,16 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [ ] Packages stay enquiry-only (optional deposit payment not built — owner to decide)
   - [ ] **Exit criterion:** an end-to-end test booking succeeds in test mode on a preview deploy. Needs Razorpay TEST keys + webhook secret in Vercel, plus the Phase 3 setup
   - [ ] Owner to confirm: commission %, service fee %, GST rate (defaults 12% / 15% commission, 0% fee, 0% tax) and the cancellation rules in `content/policies.ts`
-- [ ] Phase 5 — Polish
+- [ ] **Phase 5 — Polish.** Code complete on branch `feat/phase-5`; verified locally with lint, typecheck, 45 unit tests, build (82 routes) and 95 Playwright checks, including axe accessibility scans.
+  - [x] Reviews: one per completed booking, star rating + text, live immediately; host public replies; admin hide/show; ratings on cards and pages; `aggregateRating` JSON-LD
+  - [x] Daily review-request email (Vercel cron, needs `CRON_SECRET` + verified sender)
+  - [x] Performance pass: illustrations moved out of the page markup into cached, lazily loaded SVG images; home page DOM 996 → 582 elements, TBT 580 ms → 80 ms
+  - [x] Local Lighthouse (mobile, production build): Home 96 / 100 / 100 / 100, package page 96 / 100 / 100 / 100, stay page 98 / 100 / 100 / 100, state page 98 / 100 / 100 / 100 (performance / accessibility / best practices / SEO)
+  - [x] Automated accessibility tests (axe, WCAG 2.1 AA) on 12 key pages at mobile and desktop widths; fixed the issues they found (logo label, month buttons, scrollable season table)
+  - [x] Owner photo workflow: `public/photos/README.md`; `validate:content` checks photo files exist and remote photos are credited
+  - [ ] Hindi / Assamese translations — not built; owner to decide
+  - [ ] Owner photos — waiting for the photos
+  - [ ] Owner sign-off
 
 ## Mock-up defects (spec §9)
 
@@ -92,7 +101,7 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
 - [x] Festival countdown targets the next upcoming festival with no hydration warning
 - [x] Search finds states, attractions, packages, festivals; keyboard accessible; no raw HTML injection
 - [x] No government branding or .gov.in contacts (only outbound links to official permit portals)
-- [ ] Lighthouse mobile ≥ 90 in all four categories on Home and a package page (run after deploy)
+- [ ] Lighthouse mobile ≥ 90 in all four categories on Home and a package page — met locally on the production build (96–100); confirm on the live URL
 - [x] No console errors locally (checked by Playwright); [ ] re-check on production
 - [x] sitemap.xml, robots.txt, OG images and per-page titles present
 - [ ] GitHub repo exists ✔, main protected by CI ☐, Vercel project connected ✔, push to main auto-deploys ✔, PRs get previews ☐ (not yet tested)

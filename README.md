@@ -17,16 +17,16 @@ npm run dev                  # http://localhost:3000
 
 ## Scripts
 
-| Command                    | What it does                                                  |
-| -------------------------- | ------------------------------------------------------------- |
-| `npm run dev`              | Local dev server                                              |
-| `npm run build`            | Production build                                              |
-| `npm run lint`             | ESLint                                                        |
-| `npm run typecheck`        | Generates route types, then `tsc --noEmit`                    |
-| `npm run test`             | Vitest unit tests (budget maths, permits, festivals, search)  |
-| `npm run test:e2e`         | Playwright smoke tests at 360 / 768 / 1280 px (needs a build) |
-| `npm run validate:content` | Zod-validates every file in `/content`                        |
-| `npm run format`           | Prettier                                                      |
+| Command                    | What it does                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`              | Local dev server                                                                                                   |
+| `npm run build`            | Production build                                                                                                   |
+| `npm run lint`             | ESLint                                                                                                             |
+| `npm run typecheck`        | Generates route types, then `tsc --noEmit`                                                                         |
+| `npm run test`             | Vitest unit tests (budget maths, permits, festivals, search)                                                       |
+| `npm run test:e2e`         | Playwright smoke, marketplace/booking journeys and axe accessibility checks at 360 / 768 / 1280 px (needs a build) |
+| `npm run validate:content` | Zod-validates every file in `/content`                                                                             |
+| `npm run format`           | Prettier                                                                                                           |
 
 CI (`.github/workflows/ci.yml`) runs all of these on every push and pull request.
 
@@ -61,6 +61,15 @@ Stays and experiences can be booked online once Razorpay keys are set. Otherwise
 - **Test mode:** live keys (`rzp_live_…`) are refused unless `PAYMENTS_LIVE_APPROVED=true`. For local development and CI, `PAYMENTS_FAKE=1` provides a fake gateway that still goes through the real signature checks. It is ignored on Vercel.
 - **Policies:** cancellation rules are in `content/policies.ts` and are placeholders for the owner to confirm.
 
+### Reviews
+
+- Travellers can review a confirmed stay from their booking page once it has ended, for up to 60 days.
+- Reviews go live immediately and show only the guest's first name and initial.
+- Hosts can post a public reply from their dashboard. Admins can hide or show any review at `/admin`.
+- Ratings appear on listing cards and pages, and in the page's structured data (`aggregateRating`) for search engines.
+- A daily Vercel cron (`vercel.json` → `/api/cron/review-requests`, 10:00 IST) emails guests whose stay ended in the past week, asking for a review.
+  - It needs `CRON_SECRET` and a verified sender address (`CONTACT_FROM_EMAIL`).
+
 ### Local database
 
 ```bash
@@ -89,7 +98,7 @@ All travel content is typed data in `/content`. No markup is needed.
 
 After you check a permit record on the official portal, set `verified: true` and `lastVerified: 'YYYY-MM-DD'`. Run `npm run validate:content` before you push.
 
-**Photos.** Cards currently show drawn SVG landscapes. To use a real photo, add `src` (a `/public` path or an `images.unsplash.com` URL) and `credit` to any `image` / `cover` object. Add other image hosts to `images.remotePatterns` and the `img-src` CSP in `next.config.ts`.
+**Photos.** Cards currently show drawn SVG landscapes, served as cached images from `/scene/…`. See `public/photos/README.md` to add your own. To use a real photo, add `src` (a `/public` path or an `images.unsplash.com` URL) and `credit` to any `image` / `cover` object. Add other image hosts to `images.remotePatterns` and the `img-src` CSP in `next.config.ts`.
 
 ## Deployment (GitHub → Vercel)
 
