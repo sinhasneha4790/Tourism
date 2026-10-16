@@ -2,7 +2,7 @@
 
 Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `reference/mockup.html` ("09 Plan Your Trip · Permits & costs").
 
-**Live URL:** _not yet deployed. The Vercel project must be connected by the owner (see README → Deployment)._
+**Live URL:** https://tourism-tm78.vercel.app (Vercel project `tourism-tm78`; first successful production deploy of `9cb0a28` on 2026-10-16)
 **Repository:** https://github.com/sinhasneha4790/Tourism
 
 ## Decisions taken while building Phase 1
@@ -27,7 +27,7 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [x] Security headers (CSP, nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options)
   - [x] CI workflow
   - [x] Pushed to GitHub (`main`)
-  - [ ] **Deploy to Vercel.** Waiting on the owner to import the repo (see "Owner actions" below).
+  - [x] Deployed to Vercel — https://tourism-tm78.vercel.app
   - [ ] Lighthouse ≥ 90 on production (needs the live URL)
 - [ ] Phase 2 — Enquiries & trust (Contact, About, legal pages, WhatsApp button, email delivery)
 - [ ] Phase 3 — Marketplace listings
@@ -65,9 +65,9 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
 - [ ] Lighthouse mobile ≥ 90 in all four categories on Home and a package page (run after deploy)
 - [x] No console errors locally (checked by Playwright); [ ] re-check on production
 - [x] sitemap.xml, robots.txt, OG images and per-page titles present
-- [ ] GitHub repo exists ✔, main protected by CI ☐, Vercel project connected ☐, push to main auto-deploys ☐, PRs get previews ☐
+- [ ] GitHub repo exists ✔, main protected by CI ☐, Vercel project connected ✔, push to main auto-deploys ✔, PRs get previews ☐ (not yet tested)
 - [x] .env.example committed; no secrets in git history
-- [x] README explains setup, scripts, content editing and deployment; [ ] PROGRESS.md updated with the live URL
+- [x] README explains setup, scripts, content editing and deployment; [x] PROGRESS.md updated with the live URL
 
 ## Owner actions needed
 
