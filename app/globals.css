@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+
+/*
+ * Mistrail design tokens, taken from reference/mockup.html.
+ * Pages use these token utilities (bg-teal, text-ink-2 …) — never raw hex.
+ */
+@theme {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
+
+  /* Text */
+  --color-ink: #17221c;
+  --color-ink-2: #3a4a42;
+  --color-ink-3: #4a5a50;
+  --color-ink-4: #5f6e66;
+
+  /* Surfaces */
+  --color-paper: #f6f8f7;
+  --color-card: #ffffff;
+  --color-line: #dce3e0;
+  --color-line-soft: #e3e9e6;
+
+  /* Brand teal */
+  --color-teal: #2e4a50;
+  --color-teal-soft: #e6eef0;
+  --color-sage: #6e8c93;
+
+  /* Accents */
+  --color-terracotta: #b5462e;
+  --color-peach: #e9a07f;
+  --color-peach-soft: #f3c9b4;
+  --color-forest: #2f6b5e;
+  --color-mint: #9db8ae;
+  --color-blush: #e3b7a6;
+  /* Darkened from the mock-up's #C9781B so white text passes 4.5:1. */
+  --color-amber: #a8620f;
+  --color-amber-bg: #f7ebd9;
+  --color-amber-line: #ead7b8;
+  --color-amber-ink: #5a3a10;
+
+  /* Dark surfaces (footer, totals) */
+  --color-night: #17221c;
+  --color-night-2: #222e28;
+  --color-night-line: #33423a;
+  --color-night-line-2: #44544b;
+  --color-night-text: #dce3e0;
+  --color-night-muted: #a9b6af;
+  --color-night-soft: #cfdbd6;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+@utility container-site {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1320px;
+  padding-inline: 16px;
+  @media (width >= 48rem) {
+    padding-inline: 24px;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 32px;
+  }
+}
+
+@utility eyebrow {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@utility accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-terracotta);
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-plain {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #999 !important;
+  }
+  .print-plain * {
+    color: #000 !important;
+  }
+}
