@@ -19,7 +19,7 @@ export function NavLinks() {
             key={item.href}
             href={item.href}
             aria-current={active ? 'page' : undefined}
-            className={`rounded-full px-3.5 py-2.5 text-[15px] font-semibold transition-colors ${
+            className={`rounded-full px-3 py-2.5 text-[15px] font-semibold transition-colors ${
               active ? 'bg-teal-soft text-teal' : 'text-ink-2 hover:bg-teal-soft'
             }`}
           >

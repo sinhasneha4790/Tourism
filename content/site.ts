@@ -22,7 +22,8 @@ export const SITE = {
 export const NAV = [
   { href: '/states', label: 'Destinations' },
   { href: '/packages', label: 'Tour packages' },
+  { href: '/stays', label: 'Homestays' },
+  { href: '/experiences', label: 'Experiences' },
   { href: '/festivals', label: 'Festivals' },
   { href: '/permits', label: 'Permits' },
-  { href: '/plan', label: 'Plan & costs' },
 ] as const;

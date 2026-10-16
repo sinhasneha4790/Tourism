@@ -13,6 +13,8 @@ async function CopyrightYear() {
 
 const TRAVEL = [
   { href: '/packages', label: 'Tour packages' },
+  { href: '/stays', label: 'Homestays' },
+  { href: '/experiences', label: 'Experiences' },
   { href: '/festivals', label: 'Festival calendar' },
   { href: '/permits', label: 'Permits (ILP / PAP / RAP)' },
   { href: '/plan', label: 'Trip cost planner' },
@@ -22,7 +24,7 @@ const TRAVEL = [
 const COMPANY = [
   { href: '/about', label: 'About us' },
   { href: '/contact', label: 'Contact & FAQ' },
-  { href: '/packages', label: 'Enquire about a trip' },
+  { href: '/host', label: 'List your homestay' },
 ];
 
 const LEGAL_LINKS = [

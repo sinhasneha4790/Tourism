@@ -121,7 +121,7 @@ export const permitSchema = z.object({
 
 /** Shared by the enquiry form (client) and the server action. */
 export const enquirySchema = z.object({
-  kind: z.enum(['package', 'contact', 'plan']),
+  kind: z.enum(['package', 'contact', 'plan', 'listing']),
   name: z.string().trim().min(2, 'Please tell us your name').max(80),
   email: z.email('Please enter a valid email'),
   phone: z
@@ -135,6 +135,7 @@ export const enquirySchema = z.object({
   travellers: z.coerce.number().int().min(1).max(30),
   message: z.string().trim().max(2000).optional().or(z.literal('')),
   ref: z.string().max(200).optional(),
+  listingId: z.string().max(64).optional(),
 });
 
 export type EnquiryInput = z.infer<typeof enquirySchema>;
@@ -142,3 +143,68 @@ export type EnquiryInput = z.infer<typeof enquirySchema>;
 export const newsletterSchema = z.object({
   email: z.email('Please enter a valid email'),
 });
+
+const phoneField = z
+  .string()
+  .trim()
+  .min(8, 'Please enter a phone number')
+  .max(20)
+  .regex(/^[+\d\s()-]+$/, 'Digits, spaces and + only');
+
+export const hostProfileSchema = z.object({
+  displayName: z.string().trim().min(2, 'Please enter the name guests will see').max(80),
+  phone: phoneField,
+  state: stateSlug,
+  bio: z.string().trim().max(1000).optional().or(z.literal('')),
+});
+
+/** Splits a comma- or newline-separated amenities field into a clean list. */
+const amenityList = z
+  .string()
+  .optional()
+  .transform((v) =>
+    (v ?? '')
+      .split(/[,\n]/)
+      .map((a) => a.trim())
+      .filter(Boolean)
+      .slice(0, 30),
+  );
+
+const optionalCoord = (min: number, max: number) =>
+  z
+    .union([z.literal(''), z.coerce.number().min(min).max(max)])
+    .optional()
+    .transform((v) => (v === '' || v === undefined ? null : v));
+
+export const listingSchema = z.object({
+  type: z.enum(['stay', 'experience']),
+  title: z.string().trim().min(5, 'Use at least 5 characters').max(100),
+  state: stateSlug,
+  location: z.string().trim().min(2, 'Where is it? e.g. village, district').max(120),
+  description: z.string().trim().min(40, 'Describe it in at least 40 characters').max(4000),
+  amenities: amenityList,
+  basePriceInr: z.coerce.number().int('Whole rupees only').min(100, 'Minimum ₹100').max(500000),
+  priceUnit: z.enum(['night', 'person', 'group']),
+  maxGuests: z.coerce.number().int().min(1).max(50),
+  cancellationPolicy: z.enum(['flexible', 'moderate', 'strict']),
+  lat: optionalCoord(20, 30),
+  lng: optionalCoord(87, 98),
+});
+
+export type ListingInput = z.infer<typeof listingSchema>;
+
+export const PHOTO_MAX_BYTES = 4 * 1024 * 1024;
+export const PHOTO_MAX_COUNT = 8;
+export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+
+export function slugify(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60) || 'listing'
+  );
+}

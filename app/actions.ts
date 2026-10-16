@@ -3,7 +3,10 @@
 import { headers } from 'next/headers';
 import { enquirySchema, newsletterSchema } from '@/lib/validators';
 import { rateLimit } from '@/lib/rate-limit';
+import { and, eq } from 'drizzle-orm';
 import { canEmailTravellers, sendEmail } from '@/lib/email';
+import { db } from '@/lib/db';
+import { enquiries, listings, users } from '@/lib/db/schema';
 
 export interface FormState {
   ok: boolean;
@@ -58,16 +61,48 @@ export async function submitEnquiry(_prev: FormState, formData: FormData): Promi
     e.message ? `\n${e.message}` : '',
   ].filter(Boolean);
 
-  const sent = await sendEmail({
-    subject: `New ${e.kind} enquiry${e.ref ? ` — ${e.ref}` : ''}`,
-    text: lines.join('\n'),
-    replyTo: e.email,
-  });
-  if (!sent) {
+  // Listing enquiries must point at a live listing; we also notify its host.
+  let listing: { id: string; title: string; hostEmail: string | null } | null = null;
+  if (e.kind === 'listing' && e.listingId && db) {
+    const [row] = await db
+      .select({ id: listings.id, title: listings.title, hostEmail: users.email })
+      .from(listings)
+      .innerJoin(users, eq(users.id, listings.hostId))
+      .where(and(eq(listings.id, e.listingId), eq(listings.status, 'approved')));
+    listing = row ?? null;
+    if (!listing) return { ok: false, message: 'That listing is no longer available.' };
+  }
+
+  const subject = `New ${e.kind} enquiry${e.ref ? ` — ${e.ref}` : ''}`;
+  const sent = await sendEmail({ subject, text: lines.join('\n'), replyTo: e.email });
+
+  // Store every enquiry when the database is configured, so it reaches hosts and admins even if email is down.
+  let saved = false;
+  if (db) {
+    try {
+      await db.insert(enquiries).values({
+        kind: e.kind,
+        listingId: listing?.id ?? null,
+        name: e.name,
+        email: e.email,
+        phone: e.phone || null,
+        payload: { ref: e.ref, startDate: e.startDate || null, travellers: e.travellers, message: e.message || '' },
+        emailed: sent,
+      });
+      saved = true;
+    } catch (err) {
+      console.error('[enquiry] could not save', err);
+    }
+  }
+
+  if (!sent && !saved) {
     return {
       ok: false,
       message: 'We couldn’t send your enquiry just now. Please try again shortly.',
     };
+  }
+  if (listing?.hostEmail && canEmailTravellers()) {
+    await sendEmail({ to: listing.hostEmail, subject: `New enquiry for ${listing.title}`, text: lines.join('\n'), replyTo: e.email });
   }
   // Best-effort confirmation to the traveller; only once a verified sender domain is configured.
   if (canEmailTravellers()) {

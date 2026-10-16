@@ -11,12 +11,14 @@ const labelCls = 'flex flex-col gap-1.5 text-sm font-bold text-ink-2';
 export function EnquiryForm({
   kind,
   refLabel,
+  listingId,
   defaultTravellers = 2,
   defaultMessage = '',
   showTrip = true,
   messageLabel = 'Anything we should know?',
 }: {
-  kind: 'package' | 'contact' | 'plan';
+  kind: 'package' | 'contact' | 'plan' | 'listing';
+  listingId?: string;
   refLabel?: string;
   defaultTravellers?: number;
   defaultMessage?: string;
@@ -39,6 +41,7 @@ export function EnquiryForm({
     <form action={action} noValidate className="grid gap-4 sm:grid-cols-2">
       <input type="hidden" name="kind" value={kind} />
       {refLabel && <input type="hidden" name="ref" value={refLabel} />}
+      {listingId && <input type="hidden" name="listingId" value={listingId} />}
       {/* Honeypot */}
       <div aria-hidden="true" className="absolute -left-[9999px]">
         <label>

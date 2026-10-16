@@ -54,6 +54,8 @@ test('permit checker deep-links and links the right portal', async ({ page }) =>
 test('budget planner per-person total updates', async ({ page }) => {
   await page.goto('/plan');
   const perPerson = page.getByTestId('budget-per-person');
+  // Wait for the streamed planner to replace its prerendered placeholder.
+  await expect(perPerson).toHaveCount(1);
   const before = await perPerson.textContent();
   await page.getByRole('button', { name: 'More travellers' }).click();
   await expect(perPerson).not.toHaveText(before ?? '');

@@ -54,7 +54,7 @@ export function MobileMenu() {
   }, [open]);
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         ref={toggleRef}
         type="button"
@@ -100,8 +100,10 @@ export function MobileMenu() {
               </Link>
             ))}
             {[
+              { href: '/plan', label: 'Plan & costs' },
               { href: '/about', label: 'About us' },
               { href: '/contact', label: 'Contact' },
+              { href: '/account', label: 'Your account' },
             ].map((item) => (
               <Link
                 key={item.href}

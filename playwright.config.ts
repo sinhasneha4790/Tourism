@@ -7,7 +7,7 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
   reporter: 'list',
-  use: { baseURL: `http://localhost:${PORT}` },
+  use: { baseURL: `http://localhost:${PORT}`, screenshot: 'only-on-failure' },
   projects: [
     { name: 'mobile-360', use: { ...devices['Desktop Chrome'], viewport: { width: 360, height: 780 } } },
     { name: 'tablet-768', use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } } },

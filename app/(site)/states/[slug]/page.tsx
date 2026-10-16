@@ -10,6 +10,7 @@ import { PackageCard, FestivalCard } from '@/components/cards';
 import { Picture } from '@/components/ui/Picture';
 import { Chip, LastVerified } from '@/components/ui/Section';
 import { JsonLd } from '@/components/JsonLd';
+import { StaysRow } from '@/components/marketplace/StaysRow';
 import { SITE } from '@/content/site';
 
 export function generateStaticParams() {
@@ -217,10 +218,7 @@ export default async function StatePage({ params }: PageProps<'/states/[slug]'>)
           </section>
         )}
 
-        <section aria-label="Stays" className="rounded-[24px] border border-dashed border-line p-7 text-ink-2">
-          <h2 className="text-xl font-extrabold text-ink">Stays in {state.name}</h2>
-          <p className="mt-1">Homestay listings from local hosts open soon on the Mistrail marketplace.</p>
-        </section>
+        <StaysRow state={state.slug} title={`Stays in ${state.name}`} emptyHint />
 
         <LastVerified verified={false} />
       </div>

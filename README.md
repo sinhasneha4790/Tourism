@@ -30,6 +30,31 @@ npm run dev                  # http://localhost:3000
 
 CI (`.github/workflows/ci.yml`) runs all of these on every push and pull request.
 
+## Marketplace (homestays & experiences)
+
+Hosts sign in, create a host profile, add listings with photos and submit them. An admin approves them, and approved listings appear on `/stays` and `/experiences`.
+
+- **Database:** Postgres through Drizzle ORM. The schema is in `lib/db/schema.ts` and migrations are in `/drizzle`.
+  - After changing the schema, run `npm run db:generate` and commit the new SQL file.
+  - Migrations run automatically before every Vercel build (`vercel-build` script), and are skipped when `DATABASE_URL` isn't set.
+- **Auth:** Auth.js v5 (`auth.ts`) with email magic links (Resend) and optional Google. Roles are `traveller`, `host` and `admin`.
+  - Anyone whose email is in `ADMIN_EMAILS` is an admin.
+  - Roles are re-read from the database on every request (`lib/dal.ts`).
+- **Photos:** stored in Vercel Blob (`BLOB_READ_WRITE_TOKEN`), with up to 8 per listing at 4 MB each.
+- **Without a database** the site still builds, and the marketplace pages show an "opening soon" state.
+
+### Local database
+
+```bash
+# any Postgres 14+; for example with Docker:
+docker run -d -p 5432:5432 -e POSTGRES_USER=mistrail -e POSTGRES_PASSWORD=mistrail -e POSTGRES_DB=mistrail_dev postgres:16
+export DATABASE_URL=postgres://mistrail:mistrail@localhost:5432/mistrail_dev
+export AUTH_SECRET=dev-secret-change-me AUTH_TEST_LOGIN=1 ADMIN_EMAILS=you@example.com
+npm run db:migrate && npm run dev
+```
+
+`AUTH_TEST_LOGIN=1` adds a password-free "test login" on `/signin` for local development and CI. It is ignored whenever the app runs on Vercel.
+
 ## Editing content
 
 All travel content is typed data in `/content`. No markup is needed.

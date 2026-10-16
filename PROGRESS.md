@@ -39,7 +39,17 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [x] Footer Company and Legal links; About and Contact in the mobile menu; sitemap updated
   - [x] Analytics (Vercel Web Analytics + Speed Insights, loaded on Vercel only)
   - [ ] **Exit criterion:** a test enquiry reaches CONTACT_TO_EMAIL from production. Needs `RESEND_API_KEY` + `CONTACT_TO_EMAIL` set in Vercel
-- [ ] Phase 3 — Marketplace listings
+- [ ] **Phase 3 — Marketplace listings.** Code complete on branch `feat/phase-3`; verified locally against Postgres 16 with lint, typecheck, 32 unit tests, build (67 routes) and 66 Playwright checks, including the full host → admin → traveller flow.
+  - [x] Postgres + Drizzle ORM schema and migrations (users, Auth.js tables, host profiles, listings, enquiries); migrations run before each Vercel build
+  - [x] Auth.js v5: email magic link (Resend) + Google; JWT sessions with roles re-read from the database; `ADMIN_EMAILS` grants admin
+  - [x] `/host`: host sign-up and profile (payout details are left to the payment provider)
+  - [x] `/host/dashboard`, `/host/listings/new`, `/host/listings/[id]`: listing editor, photo upload (Vercel Blob), submit for review, enquiries per listing
+  - [x] `/admin`: approval queue (approve / send back with reason), listing counts, latest enquiries; non-admins get a 404
+  - [x] `/stays`, `/experiences` with state / price / guests filters in the URL; detail pages with enquiry form and JSON-LD
+  - [x] Enquiries stored in the database (and emailed); hosts get emails once a verified sender is set
+  - [x] Homestays on the home page and on each state page; header Log in / Dashboard button; nav matches the design (Homestays, Experiences)
+  - [x] CI runs a Postgres service and the marketplace end-to-end test
+  - [ ] **Exit criterion:** "A host can create a listing, admin approves it, it appears publicly" — passes locally; needs the database, `AUTH_SECRET`, `ADMIN_EMAILS` and email sign-in configured on Vercel to pass in production
 - [ ] Phase 4 — Bookings & payments (Razorpay test mode)
 - [ ] Phase 5 — Polish
 

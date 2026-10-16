@@ -13,6 +13,7 @@ import { Picture } from '@/components/ui/Picture';
 import { HeroFilter } from '@/components/home/HeroFilter';
 import { FestivalSpotlight } from '@/components/home/FestivalSpotlight';
 import { JsonLd } from '@/components/JsonLd';
+import { StaysRow } from '@/components/marketplace/StaysRow';
 
 async function buildTimeNextFestival() {
   'use cache';
@@ -155,6 +156,14 @@ export default async function HomePage() {
         </section>
 
         <FestivalSpotlight initial={spotlight} />
+
+        <StaysRow
+          title={
+            <>
+              Stay with <span className="accent">local hosts</span>
+            </>
+          }
+        />
 
         {/* Permit banner */}
         <section
