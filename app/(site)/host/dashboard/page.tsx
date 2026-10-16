@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { Plus } from 'lucide-react';
 import { requireHost } from '@/lib/dal';
 import { requireDb } from '@/lib/db';
-import { enquiries, listings } from '@/lib/db/schema';
+import { bookings, enquiries, listings } from '@/lib/db/schema';
+import { BookingList } from '@/components/booking/BookingList';
 import { stateName } from '@/content/states';
 import { formatInr } from '@/lib/format';
 import { StatusChip } from '@/components/marketplace/StatusChip';
@@ -20,6 +21,27 @@ async function Dashboard() {
   const ids = mine.map((l) => l.id);
   const recent = ids.length ? await db.select().from(enquiries).where(inArray(enquiries.listingId, ids)).orderBy(desc(enquiries.createdAt)).limit(20) : [];
   const titleOf = new Map(mine.map((l) => [l.id, l.title]));
+  const hostBookings = await db
+    .select({
+      ref: bookings.ref,
+      status: bookings.status,
+      startDate: bookings.startDate,
+      endDate: bookings.endDate,
+      guests: bookings.guests,
+      amountInr: bookings.amountInr,
+      hostPayoutInr: bookings.hostPayoutInr,
+      guestName: bookings.guestName,
+      title: listings.title,
+      payoutId: bookings.payoutId,
+    })
+    .from(bookings)
+    .leftJoin(listings, eq(listings.id, bookings.listingId))
+    .where(and(eq(bookings.hostId, user.id), inArray(bookings.status, ['confirmed', 'cancelled', 'refunded'])))
+    .orderBy(desc(bookings.startDate))
+    .limit(50);
+  const confirmed = hostBookings.filter((b) => b.status === 'confirmed');
+  const owed = confirmed.filter((b) => !b.payoutId).reduce((n, b) => n + b.hostPayoutInr, 0);
+  const paidOut = confirmed.filter((b) => b.payoutId).reduce((n, b) => n + b.hostPayoutInr, 0);
 
   return (
     <div className="flex flex-col gap-10">
@@ -52,12 +74,26 @@ async function Dashboard() {
                       {l.priceUnit}
                     </span>
                   </span>
-                  <span className="font-extrabold text-teal">Edit →</span>
+                  <span className="flex flex-col items-end gap-1">
+                    <span className="font-extrabold text-teal">Edit →</span>
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
         )}
+      </section>
+
+      <section aria-labelledby="host-bookings" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="host-bookings" className="text-2xl font-extrabold">
+            Bookings
+          </h2>
+          <p className="text-sm text-ink-3">
+            Payouts owed: <strong className="text-ink">{formatInr(owed)}</strong> · paid out so far: <strong className="text-ink">{formatInr(paidOut)}</strong>
+          </p>
+        </div>
+        <BookingList rows={hostBookings} view="host" empty="Paid bookings for your listings will appear here." />
       </section>
 
       <section aria-labelledby="enquiries" className="flex flex-col gap-4">

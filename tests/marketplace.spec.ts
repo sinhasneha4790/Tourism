@@ -67,3 +67,99 @@ test('an admin approves it and travellers can find it and enquire', async ({ pag
   await page.getByRole('button', { name: 'Send enquiry' }).click();
   await expect(page.getByText(/we’ve got your enquiry/)).toBeVisible();
 });
+
+/* ------------------------------- Phase 4: bookings ------------------------------- */
+
+const day = (offset: number) => new Date(Date.now() + offset * 86_400_000 + 5.5 * 3_600_000).toISOString().slice(0, 10);
+const IN = day(40);
+const OUT = day(43);
+
+async function openListing(page: Page) {
+  await page.goto('/stays?state=arunachal-pradesh');
+  await page.getByRole('link', { name: new RegExp(title) }).click();
+  await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+}
+
+async function chooseDates(page: Page, checkIn: string, checkOut: string) {
+  const book = page.getByRole('complementary', { name: 'Book' });
+  // `min` is set once the widget has hydrated; typing earlier would be reset by React.
+  await expect(book.getByLabel('Check-in')).toHaveAttribute('min', /\d{4}-/);
+  await book.getByLabel('Check-in').fill(checkIn);
+  await book.getByLabel('Check-out').fill(checkOut);
+  return book;
+}
+
+test('a host can close a date, and travellers can’t book it', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-1280' || process.env.PAYMENTS_FAKE !== '1', 'runs once, needs the fake gateway');
+  await testLogin(page, `host-${run}@mistrail.test`, '/host/dashboard');
+  await page.getByRole('link', { name: new RegExp(title) }).click();
+  await page.getByRole('link', { name: 'Calendar & prices' }).click();
+  const closed = day(50);
+  await page.getByRole('button', { name: new RegExp(`^${closed}: open`) }).click();
+  await expect(page.getByRole('button', { name: new RegExp(`^${closed}: closed`) })).toBeVisible();
+
+  await openListing(page);
+  const book = await chooseDates(page, day(49), day(51));
+  await expect(book.getByRole('alert')).toContainText('isn’t available');
+});
+
+test('a traveller books and pays; the dates can’t be double-booked', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-1280' || process.env.PAYMENTS_FAKE !== '1', 'runs once, needs the fake gateway');
+  await openListing(page);
+  const book = await chooseDates(page, IN, OUT);
+  // 3 nights × ₹2,400 with default settings (no fee or tax)
+  await expect(book.getByTestId('quote-total')).toHaveText('₹7,200');
+  await book.getByLabel('Your name').fill('Asha Traveller');
+  await book.getByLabel('Email').fill(`asha-${run}@example.com`);
+  await book.getByRole('button', { name: 'Continue to payment' }).click();
+  await book.getByRole('button', { name: 'Pay ₹7,200' }).click();
+  await page.waitForURL(/\/bookings\/MT-/);
+  await expect(page.getByText('Confirmed', { exact: true })).toBeVisible();
+
+  await openListing(page);
+  const again = await chooseDates(page, day(42), day(44));
+  await expect(again.getByRole('alert')).toContainText('already booked');
+});
+
+test('a signed Razorpay webhook confirms a payment', async ({ page, request }, info) => {
+  test.skip(info.project.name !== 'desktop-1280' || process.env.PAYMENTS_FAKE !== '1', 'runs once, needs the fake gateway');
+  const { createHmac } = await import('node:crypto');
+  const postgres = (await import('postgres')).default;
+  await openListing(page);
+  const book = await chooseDates(page, day(60), day(62));
+  await book.getByLabel('Your name').fill('Webhook Guest');
+  await book.getByLabel('Email').fill(`hook-${run}@example.com`);
+  await book.getByRole('button', { name: 'Continue to payment' }).click();
+  await expect(book.getByText(/your dates are held/)).toBeVisible();
+
+  const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+  const [row] = await sql`select ref, razorpay_order_id from booking where guest_email = ${`hook-${run}@example.com`}`;
+  const body = JSON.stringify({
+    event: 'payment.captured',
+    payload: { payment: { entity: { id: `pay_hook_${run}`, order_id: row.razorpay_order_id, status: 'captured' } } },
+  });
+  const bad = await request.post('/api/payments/webhook', { data: body, headers: { 'content-type': 'application/json', 'x-razorpay-signature': 'nope' } });
+  expect(bad.status()).toBe(400);
+  const sig = createHmac('sha256', 'fake_secret_for_local_testing_only').update(body).digest('hex');
+  const ok = await request.post('/api/payments/webhook', { data: body, headers: { 'content-type': 'application/json', 'x-razorpay-signature': sig } });
+  expect(ok.status()).toBe(200);
+  const [after] = await sql`select status from booking where ref = ${row.ref}`;
+  await sql.end();
+  expect(after.status).toBe('confirmed');
+});
+
+test('a traveller cancels and the admin issues the refund', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-1280' || process.env.PAYMENTS_FAKE !== '1', 'runs once, needs the fake gateway');
+  await testLogin(page, `asha-${run}@example.com`, '/account');
+  await page
+    .getByRole('link', { name: new RegExp(title) })
+    .first()
+    .click();
+  await expect(page.getByText(/If you cancel today you’ll get ₹7,200 back/)).toBeVisible();
+  await page.getByRole('button', { name: 'Cancel booking' }).click();
+  await expect(page.getByText('Cancelled', { exact: true })).toBeVisible();
+
+  await testLogin(page, 'admin@mistrail.test', '/admin');
+  await page.getByRole('button', { name: 'Refund ₹7,200' }).first().click();
+  await expect(page.getByRole('button', { name: 'Refund ₹7,200' })).toHaveCount(0);
+});

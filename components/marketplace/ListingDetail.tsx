@@ -9,15 +9,11 @@ import { Picture } from '@/components/ui/Picture';
 import { Chip } from '@/components/ui/Section';
 import { JsonLd } from '@/components/JsonLd';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
+import { BookingWidget } from '@/components/booking/BookingWidget';
+import { POLICY_SUMMARY } from '@/content/policies';
 import { listingHref, listingImage } from './ListingCard';
 
-const POLICY: Record<PublicListing['cancellationPolicy'], string> = {
-  flexible: 'Flexible — free cancellation up to [3] days before arrival.',
-  moderate: 'Moderate — free cancellation up to [7] days before arrival.',
-  strict: 'Strict — [50%] refund up to [14] days before arrival.',
-};
-
-export function ListingDetail({ listing: l }: { listing: PublicListing }) {
+export function ListingDetail({ listing: l, bookingOpen }: { listing: PublicListing; bookingOpen: boolean }) {
   const isStay = l.type === 'stay';
   const state = stateName(l.state as StateSlug);
   return (
@@ -99,23 +95,41 @@ export function ListingDetail({ listing: l }: { listing: PublicListing }) {
               <h2 id="policy" className="mb-1 flex items-center gap-2 font-extrabold">
                 <ShieldCheck size={18} aria-hidden="true" /> Cancellation
               </h2>
-              <p className="text-sm">{POLICY[l.cancellationPolicy]}</p>
+              <p className="text-sm">{POLICY_SUMMARY[l.cancellationPolicy]}</p>
             </section>
             <section aria-labelledby="enquire" className="flex flex-col gap-4 rounded-[28px] border border-line-soft bg-card p-6 md:p-8">
               <h2 id="enquire" className="text-2xl font-extrabold">
-                Ask about dates
+                {bookingOpen ? 'Questions before you book?' : 'Ask about dates'}
               </h2>
-              <p className="text-ink-2">Online booking opens soon. Send your dates and we’ll confirm availability with {l.hostName}.</p>
+              <p className="text-ink-2">
+                {bookingOpen
+                  ? `Ask ${l.hostName} anything — we usually reply within a day.`
+                  : `Online booking opens soon. Send your dates and we’ll confirm availability with ${l.hostName}.`}
+              </p>
               <EnquiryForm kind="listing" listingId={l.id} refLabel={l.title} />
             </section>
           </div>
-          <aside className="flex flex-col gap-3 rounded-[28px] bg-night p-7 text-white lg:sticky lg:top-28">
-            <span className="eyebrow text-peach">From</span>
-            <p className="text-5xl font-extrabold tracking-tight">{formatInr(l.basePriceInr)}</p>
-            <p className="text-night-muted">per {l.priceUnit}</p>
-            <a href="#enquire" className="flex h-13 items-center justify-center rounded-full bg-peach font-extrabold text-night">
-              Ask about dates
-            </a>
+          <aside aria-label="Book" className="flex flex-col gap-3 rounded-[28px] bg-night p-7 text-white lg:sticky lg:top-28">
+            {bookingOpen ? (
+              <BookingWidget
+                listingId={l.id}
+                title={l.title}
+                type={l.type}
+                priceUnit={l.priceUnit}
+                basePriceInr={l.basePriceInr}
+                maxGuests={l.maxGuests}
+                policy={POLICY_SUMMARY[l.cancellationPolicy]}
+              />
+            ) : (
+              <>
+                <span className="eyebrow text-peach">From</span>
+                <p className="text-5xl font-extrabold tracking-tight">{formatInr(l.basePriceInr)}</p>
+                <p className="text-night-muted">per {l.priceUnit}</p>
+                <a href="#enquire" className="flex h-13 items-center justify-center rounded-full bg-peach font-extrabold text-night">
+                  Ask about dates
+                </a>
+              </>
+            )}
           </aside>
         </div>
       </div>

@@ -50,7 +50,18 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [x] Homestays on the home page and on each state page; header Log in / Dashboard button; nav matches the design (Homestays, Experiences)
   - [x] CI runs a Postgres service and the marketplace end-to-end test
   - [ ] **Exit criterion:** "A host can create a listing, admin approves it, it appears publicly" — passes locally; needs the database, `AUTH_SECRET`, `ADMIN_EMAILS` and email sign-in configured on Vercel to pass in production
-- [ ] Phase 4 — Bookings & payments (Razorpay test mode)
+- [ ] **Phase 4 — Bookings & payments.** Code complete on branch `feat/phase-4`; verified locally against Postgres with lint, typecheck, 42 unit tests, build (76 routes) and 70 Playwright checks (booking, double-booking guard, webhook, cancel + refund).
+  - [x] Availability calendar per listing (close dates, special prices), shown to hosts with booked days
+  - [x] Price breakdown (base × nights/guests + service fee + taxes), commission and host payout stored on each booking
+  - [x] Razorpay test-mode checkout: server-side orders, signed payment verification, 30-minute date holds, guest checkout or signed in
+  - [x] Webhook `/api/payments/webhook` (payment.captured, order.paid, refund.processed) with signature verification; idempotent confirmation
+  - [x] Booking emails to traveller, host and Mistrail; booking page with private link; traveller account shows bookings
+  - [x] Cancellations with refund preview per policy; admin issues refunds via Razorpay
+  - [x] Admin: payment mode, commission/fee/tax settings, refunds due, monthly commission report, payouts owed and recorded
+  - [x] Live keys refused unless `PAYMENTS_LIVE_APPROVED=true` (owner decision)
+  - [ ] Packages stay enquiry-only (optional deposit payment not built — owner to decide)
+  - [ ] **Exit criterion:** an end-to-end test booking succeeds in test mode on a preview deploy. Needs Razorpay TEST keys + webhook secret in Vercel, plus the Phase 3 setup
+  - [ ] Owner to confirm: commission %, service fee %, GST rate (defaults 12% / 15% commission, 0% fee, 0% tax) and the cancellation rules in `content/policies.ts`
 - [ ] Phase 5 — Polish
 
 ## Mock-up defects (spec §9)

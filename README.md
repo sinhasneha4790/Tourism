@@ -43,13 +43,31 @@ Hosts sign in, create a host profile, add listings with photos and submit them. 
 - **Photos:** stored in Vercel Blob (`BLOB_READ_WRITE_TOKEN`), with up to 8 per listing at 4 MB each.
 - **Without a database** the site still builds, and the marketplace pages show an "opening soon" state.
 
+### Bookings & payments (Razorpay)
+
+Stays and experiences can be booked online once Razorpay keys are set. Otherwise their pages fall back to the enquiry form.
+
+- **Booking flow:**
+  1. The traveller picks dates, sees a price breakdown and enters their details. The dates are held for 30 minutes.
+  2. A Razorpay order is created on the server and the traveller pays in Razorpay Checkout.
+  3. The server verifies Razorpay's payment signature and the booking is confirmed. Emails go to the traveller, the host and Mistrail.
+- **Double-booking:** availability is re-checked inside a database transaction with a per-listing lock, so two travellers can't book the same dates.
+- **Webhook:** `/api/payments/webhook` handles `payment.captured`, `order.paid` and `refund.processed`, and verifies the webhook signature. This confirms bookings even if the traveller closes the tab before returning to the site.
+- **Hosts:** set closed dates and special prices at `/host/listings/[id]/calendar`, and see bookings and payouts on the dashboard.
+- **Admin (`/admin`):**
+  - Commission, guest service fee and tax rates.
+  - Refunds due on cancelled bookings, issued through Razorpay.
+  - A monthly commission report, and payouts owed per host.
+- **Test mode:** live keys (`rzp_live_…`) are refused unless `PAYMENTS_LIVE_APPROVED=true`. For local development and CI, `PAYMENTS_FAKE=1` provides a fake gateway that still goes through the real signature checks. It is ignored on Vercel.
+- **Policies:** cancellation rules are in `content/policies.ts` and are placeholders for the owner to confirm.
+
 ### Local database
 
 ```bash
 # any Postgres 14+; for example with Docker:
 docker run -d -p 5432:5432 -e POSTGRES_USER=mistrail -e POSTGRES_PASSWORD=mistrail -e POSTGRES_DB=mistrail_dev postgres:16
 export DATABASE_URL=postgres://mistrail:mistrail@localhost:5432/mistrail_dev
-export AUTH_SECRET=dev-secret-change-me AUTH_TEST_LOGIN=1 ADMIN_EMAILS=you@example.com
+export AUTH_SECRET=dev-secret-change-me AUTH_TEST_LOGIN=1 ADMIN_EMAILS=you@example.com PAYMENTS_FAKE=1
 npm run db:migrate && npm run dev
 ```
 

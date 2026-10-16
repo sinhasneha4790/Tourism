@@ -1,13 +1,32 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { desc, eq, or } from 'drizzle-orm';
 import { requireUser } from '@/lib/dal';
+import { requireDb } from '@/lib/db';
+import { bookings, listings } from '@/lib/db/schema';
+import { BookingList } from '@/components/booking/BookingList';
 import { signOutAction } from '@/app/auth-actions';
 
 export const metadata: Metadata = { title: 'Your account', robots: { index: false, follow: false } };
 
 async function Account() {
   const user = await requireUser('/account');
+  const mine = await requireDb()
+    .select({
+      ref: bookings.ref,
+      status: bookings.status,
+      startDate: bookings.startDate,
+      endDate: bookings.endDate,
+      guests: bookings.guests,
+      amountInr: bookings.amountInr,
+      title: listings.title,
+    })
+    .from(bookings)
+    .leftJoin(listings, eq(listings.id, bookings.listingId))
+    .where(or(eq(bookings.userId, user.id), eq(bookings.guestEmail, user.email)))
+    .orderBy(desc(bookings.createdAt))
+    .limit(50);
   return (
     <div className="flex flex-col gap-6 rounded-[28px] border border-line-soft bg-card p-6 md:p-8">
       <dl className="grid gap-4 sm:grid-cols-2">
@@ -41,7 +60,12 @@ async function Account() {
           </button>
         </form>
       </div>
-      <p className="text-sm text-ink-3">Booking history will appear here when online booking opens.</p>
+      <section aria-labelledby="my-bookings" className="flex flex-col gap-3 border-t border-line-soft pt-6">
+        <h2 id="my-bookings" className="text-xl font-extrabold">
+          Your bookings
+        </h2>
+        <BookingList rows={mine} view="traveller" empty="No bookings yet. Homestays and experiences can be booked online from their pages." />
+      </section>
     </div>
   );
 }

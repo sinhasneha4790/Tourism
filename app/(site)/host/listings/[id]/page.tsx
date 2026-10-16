@@ -43,6 +43,12 @@ async function Editor({ params, searchParams }: { params: Promise<{ id: string }
       )}
 
       <div className="flex flex-wrap items-center gap-3 rounded-[20px] bg-night p-5 text-white">
+        <Link
+          href={`/host/listings/${listing.id}/calendar`}
+          className="flex h-11 items-center rounded-full border border-night-line-2 px-5 font-bold text-white hover:bg-night-2"
+        >
+          Calendar &amp; prices
+        </Link>
         {listing.status === 'approved' && (
           <Link href={publicPath} className="flex h-11 items-center rounded-full bg-peach px-5 font-extrabold text-night">
             View live listing

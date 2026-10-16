@@ -19,6 +19,8 @@ jobs:
       AUTH_SECRET: ci-test-secret-not-for-production-0123456789
       AUTH_TEST_LOGIN: '1'
       ADMIN_EMAILS: admin@mistrail.test
+      # Local fake payment gateway (refused on Vercel); exercises the real signature checks.
+      PAYMENTS_FAKE: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

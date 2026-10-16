@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 
 export const roleEnum = pgEnum('role', ['traveller', 'host', 'admin']);
@@ -133,7 +133,98 @@ export const enquiries = pgTable(
   (t) => [index('enquiry_listing_idx').on(t.listingId), index('enquiry_created_idx').on(t.createdAt)],
 );
 
+/* -------------------------------- Bookings -------------------------------- */
+
+export const bookingStatusEnum = pgEnum('booking_status', ['enquiry', 'pending_payment', 'confirmed', 'cancelled', 'refunded']);
+export const payoutStatusEnum = pgEnum('payout_status', ['pending', 'paid']);
+
+/** Per-date overrides set by hosts. No row = available at the base price. */
+export const availability = pgTable(
+  'availability',
+  {
+    listingId: text('listing_id')
+      .notNull()
+      .references(() => listings.id, { onDelete: 'cascade' }),
+    date: date('date').notNull(),
+    available: boolean('available').notNull().default(true),
+    priceOverrideInr: integer('price_override_inr'),
+  },
+  (t) => [primaryKey({ columns: [t.listingId, t.date] })],
+);
+
+export const payouts = pgTable('payout', {
+  id: id(),
+  hostId: text('host_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'restrict' }),
+  amountInr: integer('amount_inr').notNull(),
+  bookingIds: text('booking_ids').array().notNull(),
+  status: payoutStatusEnum('status').notNull().default('pending'),
+  note: text('note'),
+  createdAt: createdAt(),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
+});
+
+export const bookings = pgTable(
+  'booking',
+  {
+    id: id(),
+    /** Short human-friendly reference, e.g. MT-7KQ2PX. */
+    ref: text('ref').notNull(),
+    /** Secret for guest-checkout links (/bookings/[ref]?t=…). */
+    accessToken: text('access_token').notNull(),
+    listingId: text('listing_id').references(() => listings.id, { onDelete: 'set null' }),
+    packageSlug: text('package_slug'),
+    hostId: text('host_id').references(() => users.id, { onDelete: 'set null' }),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    guestName: text('guest_name').notNull(),
+    guestEmail: text('guest_email').notNull(),
+    guestPhone: text('guest_phone'),
+    startDate: date('start_date').notNull(),
+    endDate: date('end_date').notNull(),
+    guests: integer('guests').notNull(),
+    nights: integer('nights').notNull(),
+    subtotalInr: integer('subtotal_inr').notNull(),
+    serviceFeeInr: integer('service_fee_inr').notNull(),
+    taxInr: integer('tax_inr').notNull(),
+    amountInr: integer('amount_inr').notNull(),
+    commissionPct: doublePrecision('commission_pct').notNull(),
+    commissionInr: integer('commission_inr').notNull(),
+    hostPayoutInr: integer('host_payout_inr').notNull(),
+    cancellationPolicy: cancellationEnum('cancellation_policy').notNull(),
+    status: bookingStatusEnum('status').notNull().default('pending_payment'),
+    /** Unpaid holds stop blocking dates after this time. */
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    razorpayOrderId: text('razorpay_order_id'),
+    razorpayPaymentId: text('razorpay_payment_id'),
+    razorpayRefundId: text('razorpay_refund_id'),
+    refundDueInr: integer('refund_due_inr'),
+    cancelReason: text('cancel_reason'),
+    payoutId: text('payout_id').references(() => payouts.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    refundedAt: timestamp('refunded_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('booking_ref_idx').on(t.ref),
+    uniqueIndex('booking_order_idx').on(t.razorpayOrderId),
+    index('booking_listing_dates_idx').on(t.listingId, t.startDate, t.endDate),
+    index('booking_user_idx').on(t.userId),
+    index('booking_email_idx').on(t.guestEmail),
+    index('booking_host_idx').on(t.hostId),
+  ],
+);
+
+/** Admin-editable settings (commission, fees, tax). */
+export const settings = pgTable('setting', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type User = typeof users.$inferSelect;
 export type Listing = typeof listings.$inferSelect;
 export type HostProfile = typeof hostProfiles.$inferSelect;
 export type Enquiry = typeof enquiries.$inferSelect;
+export type Booking = typeof bookings.$inferSelect;

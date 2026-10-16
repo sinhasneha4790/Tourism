@@ -7,6 +7,7 @@ import { requireDb } from '@/lib/db';
 import { enquiries, hostProfiles, listings, users } from '@/lib/db/schema';
 import { approveListing } from '@/app/marketplace-actions';
 import { RejectForm } from '@/components/marketplace/RejectForm';
+import { AdminBookings } from '@/components/booking/AdminBookings';
 import { StatusChip } from '@/components/marketplace/StatusChip';
 import { stateName } from '@/content/states';
 import { formatInr } from '@/lib/format';
@@ -81,6 +82,8 @@ async function AdminPanel() {
           </ul>
         )}
       </section>
+
+      <AdminBookings />
 
       <section aria-labelledby="enq" className="flex flex-col gap-4">
         <h2 id="enq" className="text-2xl font-extrabold">
