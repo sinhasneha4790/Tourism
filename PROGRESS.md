@@ -26,7 +26,8 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
   - [x] SEO: per-page metadata, canonical URLs, sitemap.xml, robots.txt, OG image, JSON-LD (TravelAgency, TouristDestination, TouristTrip/Product, Event)
   - [x] Security headers (CSP, nosniff, Referrer-Policy, Permissions-Policy, X-Frame-Options)
   - [x] CI workflow
-  - [ ] **Push to GitHub and deploy to Vercel.** Blocked on owner access (see "Owner actions" below).
+  - [x] Pushed to GitHub (`main`)
+  - [ ] **Deploy to Vercel.** Waiting on the owner to import the repo (see "Owner actions" below).
   - [ ] Lighthouse ≥ 90 on production (needs the live URL)
 - [ ] Phase 2 — Enquiries & trust (Contact, About, legal pages, WhatsApp button, email delivery)
 - [ ] Phase 3 — Marketplace listings
@@ -70,7 +71,7 @@ Spec: _Mistrail Technical Build Specification v1.0_ (Oct 2026). Design: `referen
 
 ## Owner actions needed
 
-1. **GitHub push access.** Install the Claude GitHub App on `sinhasneha4790/Tourism` (https://github.com/apps/claude/installations/select_target), or push this branch yourself.
+1. ~~GitHub push access~~ — done.
 2. **Vercel.** Import the repository at vercel.com/new (one click; Next.js is detected). Set `NEXT_PUBLIC_SITE_URL`.
 3. **Branch protection.** GitHub → Settings → Branches → protect `main`, require the `CI / check` status.
 4. Supply: contact email, phone, WhatsApp number, Resend API key, real package prices and departure dates, and photos.
